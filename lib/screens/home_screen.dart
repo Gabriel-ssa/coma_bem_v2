@@ -387,7 +387,7 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Olá, Gabriel!',
+                  'Olá, Seja bem-vindo!',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
