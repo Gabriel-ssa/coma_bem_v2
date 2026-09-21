@@ -19,6 +19,9 @@ class _CadastroScreenState extends State<CadastroScreen> {
   // Bytes da foto (funciona na web, Android, iOS e desktop)
   Uint8List? _fotoBytes;
 
+  // Avaliação de 0 a 5 (passos de 0,5)
+  double _avaliacao = 0;
+
   String _latitude = '';
   String _longitude = '';
 
@@ -62,38 +65,44 @@ class _CadastroScreenState extends State<CadastroScreen> {
   Future<void> _escolherDaGaleria() => _selecionarFoto(ImageSource.gallery);
 
   void _salvarCadastro() async {
-  if (_nomeController.text.trim().isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Por favor, informe o nome do restaurante')),
-    );
-    return;
-  }
+    if (_nomeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, informe o nome do restaurante'),
+        ),
+      );
+      return;
+    }
 
-   Map<String, dynamic> dadosRestaurante = {
+    Map<String, dynamic> dadosRestaurante = {
       'res_nm_restaurante': _nomeController.text.trim(),
       'res_ds_tipo_culinaria': _culinariaController.text.trim(),
       'res_nu_latitude': _latitude,
       'res_nu_longitude': _longitude,
       'res_im_foto': _fotoBytes,
+      'res_nu_avaliacao': _avaliacao,
     };
 
-  try {
-    final id = await DatabaseHelper().inserirDados('restaurante', dadosRestaurante);
-    debugPrint('INSERIDO: id=$id dados=$dadosRestaurante');
+    try {
+      final id = await DatabaseHelper().inserirDados(
+        'restaurante',
+        dadosRestaurante,
+      );
+      debugPrint('INSERIDO: id=$id nome=${_nomeController.text.trim()}');
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Restaurante cadastrado com sucesso!')),
-    );
-    Navigator.pop(context);
-  } catch (e, s) {
-    debugPrint('ERRO AO SALVAR: $e\n$s');
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erro ao salvar: $e')),
-    );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Restaurante cadastrado com sucesso!')),
+      );
+      Navigator.pop(context);
+    } catch (e, s) {
+      debugPrint('ERRO AO SALVAR: $e\n$s');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao salvar: $e')),
+      );
+    }
   }
-}
 
   InputDecoration _fieldDecoration({
     required String hint,
@@ -149,6 +158,25 @@ class _CadastroScreenState extends State<CadastroScreen> {
     );
   }
 
+  // Cinco estrelas que refletem a avaliação (inclui meia estrela)
+  Widget _estrelas() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (i) {
+        final posicao = i + 1;
+        IconData icone;
+        if (_avaliacao >= posicao) {
+          icone = Icons.star_rounded;
+        } else if (_avaliacao >= posicao - 0.5) {
+          icone = Icons.star_half_rounded;
+        } else {
+          icone = Icons.star_border_rounded;
+        }
+        return Icon(icone, size: 26, color: orange);
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -191,6 +219,78 @@ class _CadastroScreenState extends State<CadastroScreen> {
                 decoration: _fieldDecoration(
                   hint: 'Tipo de culinária (ex: Italiana, Japonesa)',
                   icon: Icons.restaurant_menu_rounded,
+                ),
+              ),
+              const SizedBox(height: 22),
+
+              // Avaliação (0 a 5)
+              const Text(
+                'Avaliação',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: darkGreen,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+                decoration: BoxDecoration(
+                  color: lightGreen,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: border),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _estrelas(),
+                        Text(
+                          _avaliacao.toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: darkGreen,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: orange,
+                        inactiveTrackColor: border,
+                        thumbColor: orange,
+                        overlayColor: orange.withOpacity(0.15),
+                        trackHeight: 3,
+                      ),
+                      child: Slider(
+                        value: _avaliacao,
+                        min: 0,
+                        max: 5,
+                        divisions: 10,
+                        onChanged: (valor) {
+                          setState(() {
+                            _avaliacao = valor;
+                          });
+                        },
+                      ),
+                    ),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '0',
+                          style: TextStyle(fontSize: 11, color: textSecondary),
+                        ),
+                        Text(
+                          '5',
+                          style: TextStyle(fontSize: 11, color: textSecondary),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                  ],
                 ),
               ),
               const SizedBox(height: 22),

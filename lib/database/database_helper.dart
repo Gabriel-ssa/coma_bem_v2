@@ -19,7 +19,6 @@ class DatabaseHelper {
   }
 
   /// Configura o caminho do banco no dispositivo e cria as tabelas se for a primeira execução.
-    /// Configura o caminho do banco no dispositivo e cria as tabelas se for a primeira execução.
   Future<Database> _iniciarBanco() async {
     String caminhoBanco = await getDatabasesPath();
     String caminhoCompleto = join(caminhoBanco, 'coma_bem.db');
@@ -27,7 +26,7 @@ class DatabaseHelper {
       caminhoCompleto,
       version: 1,
       onCreate: _criarTabelas,
-      // Garante que a tabela exista mesmo em bancos criados antes dela
+      // Garante que a tabela e as colunas existam, mesmo em bancos antigos
       onOpen: (db) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS restaurante (
@@ -36,15 +35,22 @@ class DatabaseHelper {
             res_ds_tipo_culinaria TEXT,
             res_nu_latitude TEXT,
             res_nu_longitude TEXT,
-            res_im_foto BLOB
+            res_im_foto BLOB,
+            res_nu_avaliacao REAL DEFAULT 0
           )
         ''');
 
-        // Adiciona a coluna da foto em bancos criados antes dela
+        // Adiciona colunas novas em bancos criados antes delas
         final colunas = await db.rawQuery('PRAGMA table_info(restaurante)');
-        final temFoto = colunas.any((c) => c['name'] == 'res_im_foto');
-        if (!temFoto) {
+        final nomes = colunas.map((c) => c['name']).toList();
+
+        if (!nomes.contains('res_im_foto')) {
           await db.execute('ALTER TABLE restaurante ADD COLUMN res_im_foto BLOB');
+        }
+        if (!nomes.contains('res_nu_avaliacao')) {
+          await db.execute(
+            'ALTER TABLE restaurante ADD COLUMN res_nu_avaliacao REAL DEFAULT 0',
+          );
         }
       },
     );
@@ -59,7 +65,8 @@ class DatabaseHelper {
         usu_tx_senha TEXT NOT NULL
       )
     ''');
-    // As demais tabelas (restaurante, prato, avaliacao) da Atividade 4 devem ser inseridas aqui.
+    // A tabela restaurante é criada no onOpen (acima).
+    // As demais tabelas (prato, avaliacao) da Atividade 4 devem ser inseridas aqui.
   }
 
   // ============================================================================
@@ -67,7 +74,6 @@ class DatabaseHelper {
   // ============================================================================
 
   /// Realiza a AUTENTICAÇÃO do usuário.
-  /// Consulta no banco de dados se o e-mail e a senha informados existem e coincidem.
   /// Retorna os dados do usuário em caso de sucesso, ou nulo se as credenciais forem inválidas.
   Future<Map<String, dynamic>?> autenticarUsuario(
     String email,
@@ -84,7 +90,6 @@ class DatabaseHelper {
   }
 
   /// Realiza a INSERÇÃO (Create) de um novo registro.
-  /// Recebe o nome da tabela e um mapa com os dados, inserindo-os no banco.
   /// Retorna o ID numérico gerado para o novo registro.
   Future<int> inserirDados(String tabela, Map<String, dynamic> dados) async {
     Database db = await bancoDeDados;
@@ -99,7 +104,6 @@ class DatabaseHelper {
   }
 
   /// Realiza a ALTERAÇÃO (Update) de um registro existente.
-  /// Atualiza os dados com base na coluna de ID (chave primária) informada.
   /// Retorna o número de linhas que foram modificadas no banco.
   Future<int> alterarDados(
     String tabela,
@@ -117,7 +121,6 @@ class DatabaseHelper {
   }
 
   /// Realiza a DELEÇÃO (Delete) de um registro.
-  /// Remove permanentemente os dados da tabela com base no ID informado.
   /// Retorna o número de linhas excluídas.
   Future<int> deletarDados(String tabela, String colunaId, int id) async {
     Database db = await bancoDeDados;
@@ -125,16 +128,13 @@ class DatabaseHelper {
   }
 
   /// Insere um novo restaurante no banco de dados.
-  /// Espera um mapa de dados contendo nome, latitude, longitude e tipo de culinária.
   Future<void> inserirRestaurante(Map<String, dynamic> dadosRestaurante) async {
     try {
       Database db = await bancoDeDados;
-      // O sqflite já utiliza parâmetros seguros por padrão no método insert
       int idGerado = await db.insert('restaurante', dadosRestaurante);
       print('Sucesso: Restaurante cadastrado com o ID $idGerado.');
     } catch (erro) {
-      // O try-catch captura o erro e impede que o aplicativo trave
-      print('Erro ao tentar cadastrar o restaurante: \$erro');
+      print('Erro ao tentar cadastrar o restaurante: $erro');
     }
   }
 
@@ -144,17 +144,16 @@ class DatabaseHelper {
   ) async {
     try {
       Database db = await bancoDeDados;
-      // Uso correto do parâmetro '?' para evitar ataques de SQL Injection
       List<Map<String, dynamic>> lista = await db.query(
         'restaurante',
         where: 'res_ds_tipo_culinaria = ?',
         whereArgs: [tipo],
       );
-      print('Sucesso: Foram encontrados \${lista.length} restaurantes.');
+      print('Sucesso: Foram encontrados ${lista.length} restaurantes.');
       return lista;
     } catch (erro) {
-      print('Erro ao buscar restaurantes do tipo \$tipo: \$erro');
-      return []; // Retorna uma lista vazia em caso de falha
+      print('Erro ao buscar restaurantes do tipo $tipo: $erro');
+      return [];
     }
   }
 
@@ -170,7 +169,7 @@ class DatabaseHelper {
       int linhasAfetadas = await db.update(
         'avaliacao',
         {'avl_nu_ranking': novaNota, 'avl_tx_recomendacao': novoTexto},
-        where: 'avl_id_avaliacao = ?', // Proteção com parâmetro
+        where: 'avl_id_avaliacao = ?',
         whereArgs: [idAvaliacao],
       );
 
@@ -180,7 +179,7 @@ class DatabaseHelper {
         print('Aviso: Nenhuma avaliação encontrada com o ID $idAvaliacao.');
       }
     } catch (erro) {
-      print('Erro ao atualizar a avaliação: \$erro');
+      print('Erro ao atualizar a avaliação: $erro');
     }
   }
 
@@ -191,8 +190,7 @@ class DatabaseHelper {
 
       int linhasAfetadas = await db.delete(
         'prato',
-        where:
-            'pra_id_prato = ?', // Parâmetro para evitar exclusão acidental de toda a tabela
+        where: 'pra_id_prato = ?',
         whereArgs: [idPrato],
       );
 
@@ -202,7 +200,7 @@ class DatabaseHelper {
         print('Aviso: Nenhum prato encontrado com o ID $idPrato.');
       }
     } catch (erro) {
-      print('Erro ao tentar remover o prato: \$erro');
+      print('Erro ao tentar remover o prato: $erro');
     }
   }
 }

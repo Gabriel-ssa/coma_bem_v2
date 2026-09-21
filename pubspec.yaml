@@ -27,3 +27,5 @@ flutter:
 
   assets:
     - assets/images/logo.jpg
+    - assets/images/restaurante_italiano.jpg
+    - assets/images/restaurante_japones.jpg

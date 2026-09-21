@@ -28,6 +28,33 @@ class _HomeScreenState extends State<HomeScreen> {
   static const Color border = Color(0xFFD9E0DA);
   static const Color brown = Color(0xFF8C6E50);
 
+  // ==========================================================================
+  // CAMINHOS DAS IMAGENS
+  // Se as suas fotos estiverem em outra pasta, ajuste só estas duas linhas.
+  // ==========================================================================
+  static const String _fotoJapones = 'assets/images/restaurante_japones.jpg';
+  static const String _fotoItaliano = 'assets/images/restaurante_italiano.jpg';
+
+  // ==========================================================================
+  // RESTAURANTES FIXOS
+  // Para adicionar, remover ou editar um restaurante fixo, mexa só nesta lista.
+  // O nome de cada um precisa ser único (ele identifica o fixo ao excluir).
+  // ==========================================================================
+  static const List<Map<String, dynamic>> _restaurantesFixos = [
+    {
+      'res_nm_restaurante': 'Katsuya',
+      'res_ds_tipo_culinaria': 'Japonesa',
+      'nota': '4.8',
+      'foto_asset': _fotoJapones,
+    },
+    {
+      'res_nm_restaurante': 'Spoleto',
+      'res_ds_tipo_culinaria': 'Italiana',
+      'nota': '4.8',
+      'foto_asset': _fotoItaliano,
+    },
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -40,18 +67,55 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  // ==========================================================================
+  // CONTROLE DOS FIXOS EXCLUÍDOS (guardado no banco)
+  // ==========================================================================
+  Future<Set<String>> _fixosExcluidos() async {
+    final db = await DatabaseHelper().bancoDeDados;
+    await db.execute(
+      'CREATE TABLE IF NOT EXISTS fixo_excluido '
+      '(fix_nm_restaurante TEXT PRIMARY KEY)',
+    );
+    final linhas = await db.query('fixo_excluido');
+    return linhas.map((l) => l['fix_nm_restaurante'].toString()).toSet();
+  }
+
+  Future<void> _registrarFixoExcluido(String nome) async {
+    final db = await DatabaseHelper().bancoDeDados;
+    await db.execute(
+      'CREATE TABLE IF NOT EXISTS fixo_excluido '
+      '(fix_nm_restaurante TEXT PRIMARY KEY)',
+    );
+    await db.rawInsert(
+      'INSERT OR REPLACE INTO fixo_excluido (fix_nm_restaurante) VALUES (?)',
+      [nome],
+    );
+  }
+
+  // Junta os fixos (que não foram excluídos) com os cadastrados no banco
   void _carregarRestaurantes() async {
     try {
+      final excluidos = await _fixosExcluidos();
+      final fixos = _restaurantesFixos
+          .where((r) => !excluidos.contains(r['res_nm_restaurante']))
+          .toList();
+
       var dados = await DatabaseHelper().consultarDados('restaurante');
-      debugPrint('CARREGADOS: ${dados.length} restaurantes');
+      debugPrint('CARREGADOS: ${dados.length} restaurantes do banco');
 
       if (!mounted) return;
       setState(() {
-        _todosRestaurantes = dados;
-        _restaurantesFiltrados = dados;
+        _todosRestaurantes = [...fixos, ...dados];
+        _restaurantesFiltrados = _todosRestaurantes;
       });
     } catch (e, s) {
       debugPrint('ERRO AO CARREGAR: $e\n$s');
+      if (!mounted) return;
+      // Mesmo com erro no banco, os fixos continuam aparecendo
+      setState(() {
+        _todosRestaurantes = [..._restaurantesFixos];
+        _restaurantesFiltrados = _todosRestaurantes;
+      });
     }
   }
 
@@ -84,7 +148,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _confirmarExclusao(int id, String nome) async {
+  // Exclui qualquer restaurante: os cadastrados (têm id) saem do banco;
+  // os fixos (sem id) são registrados como excluídos.
+  Future<void> _confirmarExclusao(Map<String, dynamic> item) async {
+    final nome = (item['res_nm_restaurante'] ?? '').toString();
+    final int? id = item['res_id_restaurante'] as int?;
+
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -124,19 +193,23 @@ class _HomeScreenState extends State<HomeScreen> {
     if (confirmar != true) return;
 
     try {
-      await DatabaseHelper().deletarDados(
-        'restaurante',
-        'res_id_restaurante',
-        id,
-      );
+      if (id != null) {
+        await DatabaseHelper().deletarDados(
+          'restaurante',
+          'res_id_restaurante',
+          id,
+        );
+      } else {
+        await _registrarFixoExcluido(nome);
+      }
 
       if (!mounted) return;
       setState(() {
         _todosRestaurantes = _todosRestaurantes
-            .where((r) => r['res_id_restaurante'] != id)
+            .where((r) => !identical(r, item))
             .toList();
         _restaurantesFiltrados = _restaurantesFiltrados
-            .where((r) => r['res_id_restaurante'] != id)
+            .where((r) => !identical(r, item))
             .toList();
       });
 
@@ -156,9 +229,17 @@ class _HomeScreenState extends State<HomeScreen> {
   String _obterCaminhoFoto(String culinaria) {
     final tipo = culinaria.toLowerCase();
     if (tipo.contains('japones') || tipo.contains('japonês')) {
-      return 'screens/imagem/restaurante_japones.jpg';
+      return _fotoJapones;
     }
-    return 'screens/imagem/restaurante_italiano.jpg';
+    return _fotoItaliano;
+  }
+
+  // Nota exibida no card: fixos usam o campo 'nota' (texto);
+  // cadastrados usam a avaliação salva no banco (0 a 5).
+  String _obterNota(Map<String, dynamic> item) {
+    if (item['nota'] != null) return item['nota'].toString();
+    final valor = (item['res_nu_avaliacao'] as num?)?.toDouble() ?? 0;
+    return valor.toStringAsFixed(1);
   }
 
   @override
@@ -244,15 +325,17 @@ class _HomeScreenState extends State<HomeScreen> {
                               (item['res_ds_tipo_culinaria'] ?? '').toString();
                           final nome =
                               (item['res_nm_restaurante'] ?? '').toString();
-                          final id = item['res_id_restaurante'] as int;
+                          final String? fotoAsset =
+                              item['foto_asset'] as String?;
 
                           return _RestaurantCard(
                             name: nome,
                             category: culinaria,
-                            rating: '4.8',
-                            imagePath: _obterCaminhoFoto(culinaria),
+                            rating: _obterNota(item),
+                            imagePath:
+                                fotoAsset ?? _obterCaminhoFoto(culinaria),
                             fotoBytes: item['res_im_foto'] as Uint8List?,
-                            onDelete: () => _confirmarExclusao(id, nome),
+                            onDelete: () => _confirmarExclusao(item),
                           );
                         },
                       ),
@@ -420,19 +503,6 @@ class _RestaurantCard extends StatelessWidget {
     this.onDelete,
   });
 
-  Widget _placeholder() {
-    return Container(
-      height: 85,
-      width: double.infinity,
-      color: const Color(0xFFE2B98A),
-      child: Icon(
-        Icons.restaurant_menu_rounded,
-        size: 32,
-        color: Colors.white.withOpacity(0.7),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -468,8 +538,22 @@ class _RestaurantCard extends StatelessWidget {
                         height: 85,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _placeholder(),
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint('ERRO FOTO: $imagePath -> $error');
+                          return Container(
+                            height: 85,
+                            width: double.infinity,
+                            color: const Color(0xFFE2B98A),
+                            padding: const EdgeInsets.all(6),
+                            child: Text(
+                              imagePath,
+                              style: const TextStyle(
+                                fontSize: 8,
+                                color: Colors.white,
+                              ),
+                            ),
+                          );
+                        },
                       ),
               ),
               if (onDelete != null)
@@ -532,7 +616,7 @@ class _RestaurantCard extends StatelessWidget {
                       ),
                     ),
                     const Icon(
-                      Icons.star_border_rounded,
+                      Icons.star_rounded,
                       size: 12,
                       color: _HomeScreenState.orange,
                     ),
