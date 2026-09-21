@@ -1,22 +1,22 @@
-// lib/screens/login_screen.dart
+// lib/screens/cadastro_perfil_screen.dart
 import 'package:flutter/material.dart';
-import 'cadastro_perfil_screen.dart';
-import 'home_screen.dart';
 import '../database/database_helper.dart';
+import 'login_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class CadastroPerfilScreen extends StatefulWidget {
+  const CadastroPerfilScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<CadastroPerfilScreen> createState() => _CadastroPerfilScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
+  final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _senhaController = TextEditingController();
 
   bool _senhaVisivel = false;
-  bool _entrando = false;
+  bool _salvando = false;
 
   // Paleta
   static const Color darkGreen = Color(0xFF244C35);
@@ -26,75 +26,73 @@ class _LoginScreenState extends State<LoginScreen> {
   static const Color textSecondary = Color(0xFF7C857F);
   static const Color border = Color(0xFFD9E0DA);
 
-  // ==========================================================================
-  // CONTA FIXA
-  // Funciona mesmo sem estar cadastrada no banco. Para adicionar outra,
-  // copie um bloco e mude o e-mail e a senha.
-  // ==========================================================================
-  static const List<Map<String, String>> _contasFixas = [
-    {'email': 'admin@comabem.com', 'senha': '1234'},
-  ];
-
   @override
   void dispose() {
+    _nomeController.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
+    _senhaController.dispose();
     super.dispose();
   }
 
-  bool _validarContaFixa(String email, String senha) {
-    return _contasFixas.any(
-      (c) => c['email'] == email.toLowerCase() && c['senha'] == senha,
-    );
+  bool _emailValido(String email) {
+    return RegExp(r'^[\w\.\-]+@[\w\-]+\.[\w\.\-]+$').hasMatch(email);
   }
 
-  void _entrar() async {
+  void _criarConta() async {
+    final nome = _nomeController.text.trim();
     final email = _emailController.text.trim();
-    final senha = _passwordController.text;
+    final senha = _senhaController.text;
 
-    if (email.isEmpty || senha.isEmpty) {
+    if (nome.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informe o e-mail e a senha')),
+        const SnackBar(content: Text('Informe seu nome')),
+      );
+      return;
+    }
+    if (!_emailValido(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informe um e-mail válido')),
+      );
+      return;
+    }
+    if (senha.length < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A senha precisa ter pelo menos 4 caracteres'),
+        ),
       );
       return;
     }
 
-    setState(() => _entrando = true);
+    setState(() => _salvando = true);
 
     try {
-      // 1. Conta fixa (não precisa estar no banco)
-      if (_validarContaFixa(email.toLowerCase(), senha)) {
-        _irParaHome();
-        return;
-      }
+      await DatabaseHelper().inserirDados('usuario', {
+        'usu_nm_nome': nome,
+        'usu_tx_email': email,
+        'usu_tx_senha': senha,
+      });
 
-      // 2. Contas criadas pelo cadastro (salvas no banco)
-      final usuario = await DatabaseHelper().autenticarUsuario(email, senha);
-      if (usuario != null) {
-        _irParaHome();
-        return;
-      }
-
-      // 3. Nenhuma das duas bateu
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('E-mail ou senha incorretos')),
+        const SnackBar(content: Text('Conta criada com sucesso!')),
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (e) {
+      // E-mail duplicado (UNIQUE) cai aqui
+      final mensagem = e.toString().contains('UNIQUE')
+          ? 'Esse e-mail já está cadastrado'
+          : 'Erro ao criar conta: $e';
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao entrar: $e')),
+        SnackBar(content: Text(mensagem)),
       );
     } finally {
-      if (mounted) setState(() => _entrando = false);
+      if (mounted) setState(() => _salvando = false);
     }
-  }
-
-  void _irParaHome() {
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
   }
 
   InputDecoration _fieldDecoration({
@@ -127,9 +125,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final logoSize = (width * 0.32).clamp(110.0, 140.0);
-
     return Scaffold(
       backgroundColor: background,
       body: SafeArea(
@@ -143,50 +138,44 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      SizedBox(height: constraints.maxHeight * 0.07),
+                      SizedBox(height: constraints.maxHeight * 0.06),
 
-                      // Logo
-                      Center(
-                        child: Container(
-                          width: logoSize,
-                          height: logoSize,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Image.asset(
-                            'assets/images/logo.png',
-                            width: logoSize,
-                            height: logoSize,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(
-                              Icons.restaurant,
-                              size: 80,
-                              color: darkGreen,
-                            ),
-                          ),
-                        ),
+                      // Botão voltar
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back, color: darkGreen),
+                        padding: EdgeInsets.zero,
+                        alignment: Alignment.centerLeft,
                       ),
-
-                      SizedBox(height: constraints.maxHeight * 0.05),
+                      const SizedBox(height: 8),
 
                       // Título
                       const Text(
-                        'Acesse sua conta',
+                        'Criar conta',
                         style: TextStyle(
                           fontSize: 21,
                           fontWeight: FontWeight.w700,
                           color: darkGreen,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Preencha seus dados para começar',
+                        style: TextStyle(fontSize: 12, color: textSecondary),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Nome
+                      TextField(
+                        controller: _nomeController,
+                        textCapitalization: TextCapitalization.words,
+                        style: const TextStyle(fontSize: 13),
+                        decoration: _fieldDecoration(
+                          hint: 'Nome completo',
+                          icon: Icons.person_outline_rounded,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
 
                       // E-mail
                       TextField(
@@ -202,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       // Senha
                       TextField(
-                        controller: _passwordController,
+                        controller: _senhaController,
                         obscureText: !_senhaVisivel,
                         style: const TextStyle(fontSize: 13),
                         decoration: _fieldDecoration(
@@ -222,21 +211,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
 
-                      // Botão Entrar
+                      // Botão criar conta
                       SizedBox(
                         height: 44,
                         child: ElevatedButton(
-                          onPressed: _entrando ? null : _entrar,
+                          onPressed: _salvando ? null : _criarConta,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: orange,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            shadowColor: orange.withOpacity(0.3),
                             shape: const StadiumBorder(),
                           ),
-                          child: _entrando
+                          child: _salvando
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
@@ -246,7 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 )
                               : const Text(
-                                  'Entrar',
+                                  'Criar conta',
                                   style: TextStyle(
                                     fontSize: 15,
                                     color: Colors.white,
@@ -255,31 +243,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 18),
-
-                      // Esqueci minha senha
-                      const Center(
-                        child: Text(
-                          'Esqueci minha senha?',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: darkGreen,
-                            decoration: TextDecoration.underline,
-                            decorationColor: darkGreen,
-                          ),
-                        ),
-                      ),
 
                       const Spacer(),
 
-                      // Criar conta
+                      // Já tem conta
                       Center(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Text(
-                              'Ainda não tem conta? ',
+                              'Já tem uma conta? ',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: textSecondary,
@@ -287,15 +260,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.of(context).push(
+                                Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CadastroPerfilScreen(),
+                                    builder: (context) => const LoginScreen(),
                                   ),
                                 );
                               },
                               child: const Text(
-                                'Criar conta',
+                                'Entrar',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: darkGreen,

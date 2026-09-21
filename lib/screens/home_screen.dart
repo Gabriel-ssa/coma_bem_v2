@@ -660,10 +660,6 @@ class _BottomBar extends StatelessWidget {
                 label: 'Início',
                 selected: true,
               ),
-              const _NavItem(
-                icon: Icons.military_tech_outlined,
-                label: 'Ranking',
-              ),
               _NavItem(
                 icon: Icons.add_circle_outline_rounded,
                 label: 'Adicionar',

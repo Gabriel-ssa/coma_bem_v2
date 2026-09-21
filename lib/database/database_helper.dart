@@ -26,7 +26,7 @@ class DatabaseHelper {
       caminhoCompleto,
       version: 1,
       onCreate: _criarTabelas,
-      // Garante que a tabela e as colunas existam, mesmo em bancos antigos
+      // Garante que tabelas e colunas existam, mesmo em bancos antigos
       onOpen: (db) async {
         await db.execute('''
           CREATE TABLE IF NOT EXISTS restaurante (
@@ -41,17 +41,35 @@ class DatabaseHelper {
         ''');
 
         // Adiciona colunas novas em bancos criados antes delas
-        final colunas = await db.rawQuery('PRAGMA table_info(restaurante)');
-        final nomes = colunas.map((c) => c['name']).toList();
+        final colunasRestaurante =
+            await db.rawQuery('PRAGMA table_info(restaurante)');
+        final nomesRestaurante =
+            colunasRestaurante.map((c) => c['name']).toList();
 
-        if (!nomes.contains('res_im_foto')) {
-          await db.execute('ALTER TABLE restaurante ADD COLUMN res_im_foto BLOB');
+        if (!nomesRestaurante.contains('res_im_foto')) {
+          await db.execute(
+            'ALTER TABLE restaurante ADD COLUMN res_im_foto BLOB',
+          );
         }
-        if (!nomes.contains('res_nu_avaliacao')) {
+        if (!nomesRestaurante.contains('res_nu_avaliacao')) {
           await db.execute(
             'ALTER TABLE restaurante ADD COLUMN res_nu_avaliacao REAL DEFAULT 0',
           );
         }
+
+        // Adiciona a coluna do nome em bancos criados antes dela
+        final colunasUsuario = await db.rawQuery('PRAGMA table_info(usuario)');
+        final temNome =
+            colunasUsuario.any((c) => c['name'] == 'usu_nm_nome');
+        if (!temNome) {
+          await db.execute('ALTER TABLE usuario ADD COLUMN usu_nm_nome TEXT');
+        }
+
+        // Tabela de controle dos restaurantes fixos excluídos
+        await db.execute(
+          'CREATE TABLE IF NOT EXISTS fixo_excluido '
+          '(fix_nm_restaurante TEXT PRIMARY KEY)',
+        );
       },
     );
   }
@@ -61,6 +79,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE usuario (
         usu_id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+        usu_nm_nome TEXT,
         usu_tx_email TEXT NOT NULL UNIQUE,
         usu_tx_senha TEXT NOT NULL
       )
