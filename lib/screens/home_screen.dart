@@ -34,6 +34,11 @@ class _HomeScreenState extends State<HomeScreen> {
   // ==========================================================================
   static const String _fotoJapones = 'assets/images/restaurante_japones.jpg';
   static const String _fotoItaliano = 'assets/images/restaurante_italiano.jpg';
+  static const String _fotoArabe = 'assets/images/restaurante_arabe.jpg';
+  static const String _fotoCapitaes = 'assets/images/restaurante_capitaes.jpg';
+  static const String _fotoNice = 'assets/images/restaurante_nice.jpg';
+  static const String _fotoLucca = 'assets/images/restaurante_lucca.jpg';
+  static const String _fotoNaus = 'assets/images/restaurante_naus.jpg';
 
   // ==========================================================================
   // RESTAURANTES FIXOS
@@ -44,14 +49,44 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'res_nm_restaurante': 'Katsuya',
       'res_ds_tipo_culinaria': 'Japonesa',
-      'nota': '4.8',
+      'nota': '4.5',
       'foto_asset': _fotoJapones,
     },
     {
       'res_nm_restaurante': 'Spoleto',
       'res_ds_tipo_culinaria': 'Italiana',
-      'nota': '4.8',
+      'nota': '4.5',
       'foto_asset': _fotoItaliano,
+    },
+    {
+      'res_nm_restaurante': 'Habibs',
+      'res_ds_tipo_culinaria': 'Árabe',
+      'nota': '4.0',
+      'foto_asset': _fotoArabe,
+    },
+    {
+      'res_nm_restaurante': 'Capitães Gastronomia',
+      'res_ds_tipo_culinaria': 'Brasileira',
+      'nota': '4.5',
+      'foto_asset': _fotoCapitaes,
+    },
+    {
+      'res_nm_restaurante': 'Dona Nice Steakhouse',
+      'res_ds_tipo_culinaria': 'Brasileira',
+      'nota': '5.0 ',
+      'foto_asset': _fotoNice,
+    },
+    {
+      'res_nm_restaurante': 'Cantina Di Lucca',
+      'res_ds_tipo_culinaria': 'Italiana',
+      'nota': '4.0',
+      'foto_asset': _fotoLucca,
+    },
+    {
+      'res_nm_restaurante': 'Naus Restaurante',
+      'res_ds_tipo_culinaria': 'Brasileira',
+      'nota': '4.5',
+      'foto_asset': _fotoNaus,
     },
   ];
 
