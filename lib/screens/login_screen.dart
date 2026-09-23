@@ -13,7 +13,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _senhaController = TextEditingController();
 
   bool _senhaVisivel = false;
   bool _entrando = false;
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
+    _senhaController.dispose();
     super.dispose();
   }
 
@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _entrar() async {
     final email = _emailController.text.trim();
-    final senha = _passwordController.text;
+    final senha = _senhaController.text;
 
     if (email.isEmpty || senha.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -62,20 +62,20 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _entrando = true);
 
     try {
-      // 1. Conta fixa (não precisa estar no banco)
+      
       if (_validarContaFixa(email.toLowerCase(), senha)) {
         _irParaHome();
         return;
       }
 
-      // 2. Contas criadas pelo cadastro (salvas no banco)
+      
       final usuario = await DatabaseHelper().autenticarUsuario(email, senha);
       if (usuario != null) {
         _irParaHome();
         return;
       }
 
-      // 3. Nenhuma das duas bateu
+      
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('E-mail ou senha incorretos')),
@@ -145,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       SizedBox(height: constraints.maxHeight * 0.07),
 
-                      // Logo
+                      
                       Center(
                         child: Container(
                           width: logoSize,
@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             errorBuilder: (context, error, stackTrace) =>
                                 const Icon(
                               Icons.restaurant,
-                              size: 80,
+                              size: 100,
                               color: darkGreen,
                             ),
                           ),
@@ -177,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       SizedBox(height: constraints.maxHeight * 0.05),
 
-                      // Título
+                      
                       const Text(
                         'Acesse sua conta',
                         style: TextStyle(
@@ -188,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // E-mail
+                      
                       TextField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
@@ -200,9 +200,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Senha
+                      
                       TextField(
-                        controller: _passwordController,
+                        controller: _senhaController,
                         obscureText: !_senhaVisivel,
                         style: const TextStyle(fontSize: 13),
                         decoration: _fieldDecoration(
@@ -224,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Botão Entrar
+                      
                       SizedBox(
                         height: 44,
                         child: ElevatedButton(
@@ -257,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 18),
 
-                      // Esqueci minha senha
+                      
                       const Center(
                         child: Text(
                           'Esqueci minha senha?',
@@ -273,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const Spacer(),
 
-                      // Criar conta
+                      
                       Center(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,

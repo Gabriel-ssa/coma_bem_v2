@@ -16,10 +16,10 @@ class _CadastroScreenState extends State<CadastroScreen> {
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _culinariaController = TextEditingController();
 
-  // Bytes da foto (funciona na web, Android, iOS e desktop)
+  
   Uint8List? _fotoBytes;
 
-  // Avaliação de 0 a 5 (passos de 0,5)
+  
   double _avaliacao = 0;
 
   String _latitude = '';
@@ -27,7 +27,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
-  // Paleta
+  
   static const Color darkGreen = Color(0xFF244C35);
   static const Color mainGreen = Color(0xFF4F8061);
   static const Color lightGreen = Color(0xFFE8EEE9);
@@ -158,7 +158,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
     );
   }
 
-  // Cinco estrelas que refletem a avaliação (inclui meia estrela)
+
   Widget _estrelas() {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -201,7 +201,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Nome do restaurante
+              
               TextField(
                 controller: _nomeController,
                 style: const TextStyle(fontSize: 13, color: textPrimary),
@@ -212,7 +212,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Tipo de culinária
+              
               TextField(
                 controller: _culinariaController,
                 style: const TextStyle(fontSize: 13, color: textPrimary),
@@ -223,7 +223,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               const SizedBox(height: 22),
 
-              // Avaliação (0 a 5)
+              
               const Text(
                 'Avaliação',
                 style: TextStyle(
@@ -305,7 +305,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Preview da foto
+              
               Container(
                 height: 180,
                 width: double.infinity,
@@ -352,7 +352,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Botões de foto
+              
               Row(
                 children: [
                   _photoButton(
@@ -370,7 +370,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               const SizedBox(height: 28),
 
-              // Botão salvar
+              
               SizedBox(
                 height: 44,
                 child: ElevatedButton(

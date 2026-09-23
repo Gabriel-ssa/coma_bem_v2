@@ -18,7 +18,7 @@ class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
   bool _senhaVisivel = false;
   bool _salvando = false;
 
-  // Paleta
+  
   static const Color darkGreen = Color(0xFF244C35);
   static const Color lightGreen = Color(0xFFE8EEE9);
   static const Color orange = Color(0xFFD46A42);
@@ -81,7 +81,7 @@ class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (e) {
-      // E-mail duplicado (UNIQUE) cai aqui
+      
       final mensagem = e.toString().contains('UNIQUE')
           ? 'Esse e-mail já está cadastrado'
           : 'Erro ao criar conta: $e';
@@ -140,7 +140,7 @@ class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
                     children: [
                       SizedBox(height: constraints.maxHeight * 0.06),
 
-                      // Botão voltar
+                      
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.arrow_back, color: darkGreen),
@@ -149,7 +149,7 @@ class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Título
+                      
                       const Text(
                         'Criar conta',
                         style: TextStyle(
@@ -165,7 +165,7 @@ class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Nome
+                      
                       TextField(
                         controller: _nomeController,
                         textCapitalization: TextCapitalization.words,
@@ -177,7 +177,7 @@ class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // E-mail
+                      
                       TextField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
@@ -189,7 +189,7 @@ class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Senha
+                      
                       TextField(
                         controller: _senhaController,
                         obscureText: !_senhaVisivel,
@@ -213,7 +213,7 @@ class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Botão criar conta
+                      
                       SizedBox(
                         height: 44,
                         child: ElevatedButton(
@@ -246,7 +246,7 @@ class _CadastroPerfilScreenState extends State<CadastroPerfilScreen> {
 
                       const Spacer(),
 
-                      // Já tem conta
+                      
                       Center(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,

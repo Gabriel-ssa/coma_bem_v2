@@ -7,7 +7,7 @@ const Color _darkGreen = Color(0xFF244C35);
 const Color _background = Color(0xFFF9FAF5);
 const Color _dotColor = Color(0xFFF7D2BB);
 
-/// Dados de uma folha: (centro X %, centro Y %, tamanho, rotação em radianos)
+
 class _LeafData {
   final double x;
   final double y;
@@ -16,7 +16,7 @@ class _LeafData {
   const _LeafData(this.x, this.y, this.size, this.rotation);
 }
 
-/// Dados de um ponto: (centro X %, centro Y %, tamanho)
+
 class _DotData {
   final double x;
   final double y;
@@ -84,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Aguarda 2,5 segundos e vai para o login
+    
     Future.delayed(const Duration(milliseconds: 2500), () {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
@@ -104,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen> {
         fit: StackFit.expand,
         clipBehavior: Clip.hardEdge,
         children: [
-          // Pontos decorativos
+          
           for (final d in _dots)
             Positioned(
               left: size.width * d.x - d.size / 2,
@@ -119,7 +119,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
 
-          // Folhas decorativas
+          
           for (final l in _leaves)
             Positioned(
               left: size.width * l.x - l.size / 2,
@@ -134,10 +134,10 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
 
-          // Logo centralizada
+          
           Center(child: ComaBemLogo(size: logoSize)),
 
-          // Elementos inferiores
+          
           SafeArea(
             child: Align(
               alignment: Alignment.bottomCenter,
@@ -201,7 +201,7 @@ class ComaBemLogo extends StatelessWidget {
         ],
       ),
       child: Image.asset(
-        'assets/images/logo.jpg',
+        'assets/images/logo.png',
         width: size,
         height: size,
         fit: BoxFit.contain,
@@ -210,7 +210,7 @@ class ComaBemLogo extends StatelessWidget {
   }
 }
 
-/// Folha estilizada (aquarela translúcida) desenhada com CustomPainter.
+
 class _LeafPainter extends CustomPainter {
   const _LeafPainter();
 
@@ -234,7 +234,7 @@ class _LeafPainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawPath(path, fill);
 
-    // Nervura central
+    
     final vein = Paint()
       ..color = const Color(0x66FFFFFF)
       ..style = PaintingStyle.stroke
@@ -242,7 +242,7 @@ class _LeafPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(Offset(w * 0.5, h * 1.02), Offset(w * 0.5, h * 0.18), vein);
 
-    // Nervuras laterais
+    
     final side = Paint()
       ..color = const Color(0x44FFFFFF)
       ..style = PaintingStyle.stroke

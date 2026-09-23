@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _restaurantesFiltrados = [];
   final TextEditingController _searchController = TextEditingController();
 
-  // Paleta
+  
   static const Color darkGreen = Color(0xFF244C35);
   static const Color mainGreen = Color(0xFF4F8061);
   static const Color lightGreen = Color(0xFFE8EEE9);
@@ -28,10 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const Color border = Color(0xFFD9E0DA);
   static const Color brown = Color(0xFF8C6E50);
 
-  // ==========================================================================
-  // CAMINHOS DAS IMAGENS
-  // Se as suas fotos estiverem em outra pasta, ajuste só estas duas linhas.
-  // ==========================================================================
+
   static const String _fotoJapones = 'assets/images/restaurante_japones.jpg';
   static const String _fotoItaliano = 'assets/images/restaurante_italiano.jpg';
   static const String _fotoArabe = 'assets/images/restaurante_arabe.jpg';
@@ -40,50 +37,46 @@ class _HomeScreenState extends State<HomeScreen> {
   static const String _fotoLucca = 'assets/images/restaurante_lucca.jpg';
   static const String _fotoNaus = 'assets/images/restaurante_naus.jpg';
 
-  // ==========================================================================
-  // RESTAURANTES FIXOS
-  // Para adicionar, remover ou editar um restaurante fixo, mexa só nesta lista.
-  // O nome de cada um precisa ser único (ele identifica o fixo ao excluir).
-  // ==========================================================================
+  
   static const List<Map<String, dynamic>> _restaurantesFixos = [
     {
-      'res_nm_restaurante': 'Katsuya',
+      'res_nm_restaurante': 'Rodízio Japonês',
       'res_ds_tipo_culinaria': 'Japonesa',
       'nota': '4.5',
       'foto_asset': _fotoJapones,
     },
     {
-      'res_nm_restaurante': 'Spoleto',
+      'res_nm_restaurante': 'Pizza Marguerita',
       'res_ds_tipo_culinaria': 'Italiana',
       'nota': '4.5',
       'foto_asset': _fotoItaliano,
     },
     {
-      'res_nm_restaurante': 'Habibs',
+      'res_nm_restaurante': 'Esfihas',
       'res_ds_tipo_culinaria': 'Árabe',
       'nota': '4.0',
       'foto_asset': _fotoArabe,
     },
     {
-      'res_nm_restaurante': 'Capitães Gastronomia',
+      'res_nm_restaurante': 'Fundue Salgado',
       'res_ds_tipo_culinaria': 'Brasileira',
       'nota': '4.5',
       'foto_asset': _fotoCapitaes,
     },
     {
-      'res_nm_restaurante': 'Dona Nice Steakhouse',
+      'res_nm_restaurante': 'Tábua de Churrasco',
       'res_ds_tipo_culinaria': 'Brasileira',
       'nota': '5.0 ',
       'foto_asset': _fotoNice,
     },
     {
-      'res_nm_restaurante': 'Cantina Di Lucca',
+      'res_nm_restaurante': 'Nhoque de Carne bovina',
       'res_ds_tipo_culinaria': 'Italiana',
       'nota': '4.0',
       'foto_asset': _fotoLucca,
     },
     {
-      'res_nm_restaurante': 'Naus Restaurante',
+      'res_nm_restaurante': 'Salada de Frutos do Mar',
       'res_ds_tipo_culinaria': 'Brasileira',
       'nota': '4.5',
       'foto_asset': _fotoNaus,
@@ -102,9 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // ==========================================================================
-  // CONTROLE DOS FIXOS EXCLUÍDOS (guardado no banco)
-  // ==========================================================================
+  
   Future<Set<String>> _fixosExcluidos() async {
     final db = await DatabaseHelper().bancoDeDados;
     await db.execute(
@@ -127,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Junta os fixos (que não foram excluídos) com os cadastrados no banco
+  
   void _carregarRestaurantes() async {
     try {
       final excluidos = await _fixosExcluidos();
@@ -146,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e, s) {
       debugPrint('ERRO AO CARREGAR: $e\n$s');
       if (!mounted) return;
-      // Mesmo com erro no banco, os fixos continuam aparecendo
+      
       setState(() {
         _todosRestaurantes = [..._restaurantesFixos];
         _restaurantesFiltrados = _todosRestaurantes;
@@ -154,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Abre a tela de cadastro e recarrega a lista ao voltar
+  
   Future<void> _abrirCadastro() async {
     await Navigator.push(
       context,
@@ -183,8 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Exclui qualquer restaurante: os cadastrados (têm id) saem do banco;
-  // os fixos (sem id) são registrados como excluídos.
+  
   Future<void> _confirmarExclusao(Map<String, dynamic> item) async {
     final nome = (item['res_nm_restaurante'] ?? '').toString();
     final int? id = item['res_id_restaurante'] as int?;
@@ -260,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Imagem padrão (usada quando o restaurante não tem foto cadastrada)
+  
   String _obterCaminhoFoto(String culinaria) {
     final tipo = culinaria.toLowerCase();
     if (tipo.contains('japones') || tipo.contains('japonês')) {
@@ -269,8 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return _fotoItaliano;
   }
 
-  // Nota exibida no card: fixos usam o campo 'nota' (texto);
-  // cadastrados usam a avaliação salva no banco (0 a 5).
+  
   String _obterNota(Map<String, dynamic> item) {
     if (item['nota'] != null) return item['nota'].toString();
     final valor = (item['res_nu_avaliacao'] as num?)?.toDouble() ?? 0;
@@ -289,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const _Header(),
             const SizedBox(height: 14),
 
-            // Campo de busca
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: SizedBox(
@@ -333,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const _Categories(),
             const SizedBox(height: 14),
 
-            // Grade de restaurantes
+            
             Expanded(
               child: _restaurantesFiltrados.isEmpty
                   ? const Center(
@@ -380,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      // Botão flutuante (abre o cadastro)
+      
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(left: 2),
@@ -401,7 +390,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      // Barra inferior ("Adicionar" abre o cadastro)
+      
       bottomNavigationBar: _BottomBar(onAdd: _abrirCadastro),
     );
   }
@@ -439,7 +428,7 @@ class _Header extends StatelessWidget {
                     ),
                     SizedBox(width: 2),
                     Text(
-                      'Definir Localização',
+                      'Rua Tolentino Filgueiras - Gonzaga, Santos/SP',
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w500,
@@ -485,7 +474,7 @@ class _Categories extends StatelessWidget {
     _CategoryChip('Italiana', _HomeScreenState.darkGreen),
     _CategoryChip('Japonesa', _HomeScreenState.orange),
     _CategoryChip('Brasileira', _HomeScreenState.mainGreen),
-    _CategoryChip('Lanches', _HomeScreenState.brown),
+    _CategoryChip('Árabe', _HomeScreenState.brown),
   ];
 
   @override
