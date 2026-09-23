@@ -428,7 +428,7 @@ class _Header extends StatelessWidget {
                     ),
                     SizedBox(width: 2),
                     Text(
-                      'Rua Tolentino Filgueiras - Gonzaga, Santos/SP',
+                      'Av. Senador Feijó, 421 - Santos, SP',
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w500,
