@@ -355,11 +355,6 @@ class _CadastroScreenState extends State<CadastroScreen> {
               
               Row(
                 children: [
-                  _photoButton(
-                    icon: Icons.camera_alt_outlined,
-                    label: 'Tirar foto',
-                    onPressed: _tirarFoto,
-                  ),
                   const SizedBox(width: 10),
                   _photoButton(
                     icon: Icons.photo_library_outlined,
