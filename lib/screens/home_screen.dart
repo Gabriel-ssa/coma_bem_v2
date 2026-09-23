@@ -40,43 +40,43 @@ class _HomeScreenState extends State<HomeScreen> {
   
   static const List<Map<String, dynamic>> _restaurantesFixos = [
     {
-      'res_nm_restaurante': 'Rodízio Japonês',
+      'res_nm_restaurante': 'Katsuya',
       'res_ds_tipo_culinaria': 'Japonesa',
       'nota': '4.5',
       'foto_asset': _fotoJapones,
     },
     {
-      'res_nm_restaurante': 'Pizza Marguerita',
+      'res_nm_restaurante': 'Spoleto',
       'res_ds_tipo_culinaria': 'Italiana',
       'nota': '4.5',
       'foto_asset': _fotoItaliano,
     },
     {
-      'res_nm_restaurante': 'Esfihas',
+      'res_nm_restaurante': 'Habibs',
       'res_ds_tipo_culinaria': 'Árabe',
       'nota': '4.0',
       'foto_asset': _fotoArabe,
     },
     {
-      'res_nm_restaurante': 'Fundue Salgado',
+      'res_nm_restaurante': 'Capitães Gastronomia',
       'res_ds_tipo_culinaria': 'Brasileira',
       'nota': '4.5',
       'foto_asset': _fotoCapitaes,
     },
     {
-      'res_nm_restaurante': 'Tábua de Churrasco',
+      'res_nm_restaurante': 'Dona Nice Steakhouse',
       'res_ds_tipo_culinaria': 'Brasileira',
       'nota': '5.0 ',
       'foto_asset': _fotoNice,
     },
     {
-      'res_nm_restaurante': 'Nhoque de Carne bovina',
+      'res_nm_restaurante': 'Cantina Di Lucca',
       'res_ds_tipo_culinaria': 'Italiana',
       'nota': '4.0',
       'foto_asset': _fotoLucca,
     },
     {
-      'res_nm_restaurante': 'Salada de Frutos do Mar',
+      'res_nm_restaurante': 'Naus',
       'res_ds_tipo_culinaria': 'Brasileira',
       'nota': '4.5',
       'foto_asset': _fotoNaus,
