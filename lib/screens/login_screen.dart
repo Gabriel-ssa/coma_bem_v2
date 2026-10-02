@@ -3,21 +3,21 @@ import 'package:flutter/material.dart';
 import 'cadastro_perfil_screen.dart';
 import 'home_screen.dart';
 import '../database/database_helper.dart';
-
+ 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
+ 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
-
+ 
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
-
+ 
   bool _senhaVisivel = false;
   bool _entrando = false;
-
+ 
   // Paleta
   static const Color darkGreen = Color(0xFF244C35);
   static const Color lightGreen = Color(0xFFE8EEE9);
@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   static const Color background = Color(0xFFFAFBF8);
   static const Color textSecondary = Color(0xFF7C857F);
   static const Color border = Color(0xFFD9E0DA);
-
+ 
   // ==========================================================================
   // CONTA FIXA
   // Funciona mesmo sem estar cadastrada no banco. Para adicionar outra,
@@ -34,47 +34,47 @@ class _LoginScreenState extends State<LoginScreen> {
   static const List<Map<String, String>> _contasFixas = [
     {'email': 'admin@comabem.com', 'senha': '1234'},
   ];
-
+ 
   @override
   void dispose() {
     _emailController.dispose();
     _senhaController.dispose();
     super.dispose();
   }
-
+ 
   bool _validarContaFixa(String email, String senha) {
     return _contasFixas.any(
       (c) => c['email'] == email.toLowerCase() && c['senha'] == senha,
     );
   }
-
+ 
   void _entrar() async {
     final email = _emailController.text.trim();
     final senha = _senhaController.text;
-
+ 
     if (email.isEmpty || senha.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Informe o e-mail e a senha')),
       );
       return;
     }
-
+ 
     setState(() => _entrando = true);
-
+ 
     try {
       
       if (_validarContaFixa(email.toLowerCase(), senha)) {
         _irParaHome();
         return;
       }
-
+ 
       
       final usuario = await DatabaseHelper().autenticarUsuario(email, senha);
       if (usuario != null) {
         _irParaHome();
         return;
       }
-
+ 
       
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -89,14 +89,14 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) setState(() => _entrando = false);
     }
   }
-
+ 
   void _irParaHome() {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => const HomeScreen()),
     );
   }
-
+ 
   InputDecoration _fieldDecoration({
     required String hint,
     required IconData icon,
@@ -108,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
         borderSide: BorderSide(color: color, width: width),
       );
     }
-
+ 
     return InputDecoration(
       hintText: hint,
       hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFA5ADA7)),
@@ -124,12 +124,12 @@ class _LoginScreenState extends State<LoginScreen> {
       focusedBorder: outline(darkGreen, 1.5),
     );
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final logoSize = (width * 0.32).clamp(110.0, 140.0);
-
+ 
     return Scaffold(
       backgroundColor: background,
       body: SafeArea(
@@ -144,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       SizedBox(height: constraints.maxHeight * 0.07),
-
+ 
                       
                       Center(
                         child: Container(
@@ -174,9 +174,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-
+ 
                       SizedBox(height: constraints.maxHeight * 0.05),
-
+ 
                       
                       const Text(
                         'Acesse sua conta',
@@ -187,9 +187,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-
+ 
                       
-                      TextField(
+                      TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         style: const TextStyle(fontSize: 13),
@@ -199,9 +199,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-
+ 
                       
-                      TextField(
+                      TextFormField(
                         controller: _senhaController,
                         obscureText: !_senhaVisivel,
                         style: const TextStyle(fontSize: 13),
@@ -223,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-
+ 
                       
                       SizedBox(
                         height: 44,
@@ -256,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 18),
-
+ 
                       
                       const Center(
                         child: Text(
@@ -270,9 +270,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-
+ 
                       const Spacer(),
-
+ 
                       
                       Center(
                         child: Row(

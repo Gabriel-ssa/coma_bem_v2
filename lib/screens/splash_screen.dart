@@ -2,12 +2,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'login_screen.dart';
-
+ 
 const Color _darkGreen = Color(0xFF244C35);
 const Color _background = Color(0xFFF9FAF5);
 const Color _dotColor = Color(0xFFF7D2BB);
-
-
+ 
+ 
 class _LeafData {
   final double x;
   final double y;
@@ -15,15 +15,15 @@ class _LeafData {
   final double rotation;
   const _LeafData(this.x, this.y, this.size, this.rotation);
 }
-
-
+ 
+ 
 class _DotData {
   final double x;
   final double y;
   final double size;
   const _DotData(this.x, this.y, this.size);
 }
-
+ 
 const List<_LeafData> _leaves = [
   _LeafData(0.50, 0.015, 34, 0.35),
   _LeafData(0.10, 0.115, 40, -0.45),
@@ -38,7 +38,7 @@ const List<_LeafData> _leaves = [
   _LeafData(0.82, 0.875, 42, 0.45),
   _LeafData(0.50, 0.985, 38, -0.40),
 ];
-
+ 
 const List<_DotData> _dots = [
   _DotData(0.17, 0.057, 9),
   _DotData(0.27, 0.093, 8),
@@ -72,32 +72,54 @@ const List<_DotData> _dots = [
   _DotData(0.17, 0.955, 8),
   _DotData(0.38, 0.965, 8),
 ];
-
+ 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-
+ 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
-
-class _SplashScreenState extends State<SplashScreen> {
+ 
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  // A animação dura 2,5 s e, ao terminar, abre a tela de login.
+  // Como ela agenda frames continuamente, o pumpAndSettle() do teste de
+  // integração espera a splash terminar antes de procurar os campos de login.
+  late final AnimationController _controller;
+  late final Animation<double> _fadeLogo;
+ 
   @override
   void initState() {
     super.initState();
-    
-    Future.delayed(const Duration(milliseconds: 2500), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    );
+    _fadeLogo = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
+    );
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
     });
+    _controller.forward();
   }
-
+ 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+ 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final logoSize = size.width * 0.44;
-
+ 
     return Scaffold(
       backgroundColor: _background,
       body: Stack(
@@ -118,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
             ),
-
+ 
           
           for (final l in _leaves)
             Positioned(
@@ -133,10 +155,15 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               ),
             ),
-
+ 
           
-          Center(child: ComaBemLogo(size: logoSize)),
-
+          Center(
+            child: FadeTransition(
+              opacity: _fadeLogo,
+              child: ComaBemLogo(size: logoSize),
+            ),
+          ),
+ 
           
           SafeArea(
             child: Align(
@@ -178,13 +205,13 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
-
-
+ 
+ 
 class ComaBemLogo extends StatelessWidget {
   final double size;
-
+ 
   const ComaBemLogo({super.key, this.size = 135});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -209,22 +236,22 @@ class ComaBemLogo extends StatelessWidget {
     );
   }
 }
-
-
+ 
+ 
 class _LeafPainter extends CustomPainter {
   const _LeafPainter();
-
+ 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-
+ 
     final path = Path()
       ..moveTo(w * 0.5, h)
       ..cubicTo(-w * 0.10, h * 0.75, w * 0.00, h * 0.20, w * 0.5, 0)
       ..cubicTo(w * 1.00, h * 0.20, w * 1.10, h * 0.75, w * 0.5, h)
       ..close();
-
+ 
     final fill = Paint()
       ..style = PaintingStyle.fill
       ..shader = const LinearGradient(
@@ -233,7 +260,7 @@ class _LeafPainter extends CustomPainter {
         colors: [Color(0x66A8D5B5), Color(0x4D6FB08A)],
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawPath(path, fill);
-
+ 
     
     final vein = Paint()
       ..color = const Color(0x66FFFFFF)
@@ -241,7 +268,7 @@ class _LeafPainter extends CustomPainter {
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(Offset(w * 0.5, h * 1.02), Offset(w * 0.5, h * 0.18), vein);
-
+ 
     
     final side = Paint()
       ..color = const Color(0x44FFFFFF)
@@ -254,7 +281,7 @@ class _LeafPainter extends CustomPainter {
       canvas.drawLine(Offset(w * 0.5, y), Offset(w * 0.78, y - h * 0.10), side);
     }
   }
-
+ 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
