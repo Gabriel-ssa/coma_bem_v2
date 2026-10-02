@@ -1,22 +1,22 @@
 // lib/screens/home_screen.dart
 import 'dart:typed_data';
-
+ 
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import 'cadastro_screen.dart';
-
+ 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
+ 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
-
+ 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _todosRestaurantes = [];
   List<Map<String, dynamic>> _restaurantesFiltrados = [];
   final TextEditingController _searchController = TextEditingController();
-
+ 
   
   static const Color darkGreen = Color(0xFF244C35);
   static const Color mainGreen = Color(0xFF4F8061);
@@ -27,8 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
   static const Color textSecondary = Color(0xFF7C857F);
   static const Color border = Color(0xFFD9E0DA);
   static const Color brown = Color(0xFF8C6E50);
-
-
+ 
+ 
   static const String _fotoJapones = 'assets/images/restaurante_japones.jpg';
   static const String _fotoItaliano = 'assets/images/restaurante_italiano.jpg';
   static const String _fotoArabe = 'assets/images/restaurante_arabe.jpg';
@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const String _fotoNice = 'assets/images/restaurante_nice.jpg';
   static const String _fotoLucca = 'assets/images/restaurante_lucca.jpg';
   static const String _fotoNaus = 'assets/images/restaurante_naus.jpg';
-
+ 
   
   static const List<Map<String, dynamic>> _restaurantesFixos = [
     {
@@ -82,19 +82,19 @@ class _HomeScreenState extends State<HomeScreen> {
       'foto_asset': _fotoNaus,
     },
   ];
-
+ 
   @override
   void initState() {
     super.initState();
     _carregarRestaurantes();
   }
-
+ 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
-
+ 
   
   Future<Set<String>> _fixosExcluidos() async {
     final db = await DatabaseHelper().bancoDeDados;
@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final linhas = await db.query('fixo_excluido');
     return linhas.map((l) => l['fix_nm_restaurante'].toString()).toSet();
   }
-
+ 
   Future<void> _registrarFixoExcluido(String nome) async {
     final db = await DatabaseHelper().bancoDeDados;
     await db.execute(
@@ -117,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
       [nome],
     );
   }
-
+ 
   
   void _carregarRestaurantes() async {
     try {
@@ -125,10 +125,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final fixos = _restaurantesFixos
           .where((r) => !excluidos.contains(r['res_nm_restaurante']))
           .toList();
-
+ 
       var dados = await DatabaseHelper().consultarDados('restaurante');
       debugPrint('CARREGADOS: ${dados.length} restaurantes do banco');
-
+ 
       if (!mounted) return;
       setState(() {
         _todosRestaurantes = [...fixos, ...dados];
@@ -144,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
-
+ 
   
   Future<void> _abrirCadastro() async {
     await Navigator.push(
@@ -153,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     _carregarRestaurantes();
   }
-
+ 
   void _filtrarRestaurantes(String texto) {
     setState(() {
       if (texto.isEmpty) {
@@ -167,18 +167,18 @@ class _HomeScreenState extends State<HomeScreen> {
               .toString()
               .toLowerCase();
           final busca = texto.toLowerCase();
-
+ 
           return nome.contains(busca) || culinaria.contains(busca);
         }).toList();
       }
     });
   }
-
+ 
   
   Future<void> _confirmarExclusao(Map<String, dynamic> item) async {
     final nome = (item['res_nm_restaurante'] ?? '').toString();
     final int? id = item['res_id_restaurante'] as int?;
-
+ 
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -214,9 +214,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-
+ 
     if (confirmar != true) return;
-
+ 
     try {
       if (id != null) {
         await DatabaseHelper().deletarDados(
@@ -227,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
       } else {
         await _registrarFixoExcluido(nome);
       }
-
+ 
       if (!mounted) return;
       setState(() {
         _todosRestaurantes = _todosRestaurantes
@@ -237,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
             .where((r) => !identical(r, item))
             .toList();
       });
-
+ 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Restaurante excluído.')),
       );
@@ -249,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
   }
-
+ 
   
   String _obterCaminhoFoto(String culinaria) {
     final tipo = culinaria.toLowerCase();
@@ -258,14 +258,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     return _fotoItaliano;
   }
-
+ 
   
   String _obterNota(Map<String, dynamic> item) {
     if (item['nota'] != null) return item['nota'].toString();
     final valor = (item['res_nu_avaliacao'] as num?)?.toDouble() ?? 0;
     return valor.toStringAsFixed(1);
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -277,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const _Header(),
             const SizedBox(height: 14),
-
+ 
             
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -318,10 +318,23 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 14),
-
+ 
             const _Categories(),
             const SizedBox(height: 14),
-
+ 
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Catálogo de Restaurantes',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: darkGreen,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+ 
             
             Expanded(
               child: _restaurantesFiltrados.isEmpty
@@ -351,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               (item['res_nm_restaurante'] ?? '').toString();
                           final String? fotoAsset =
                               item['foto_asset'] as String?;
-
+ 
                           return _RestaurantCard(
                             name: nome,
                             category: culinaria,
@@ -368,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
+ 
       
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: Padding(
@@ -389,16 +402,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-
+ 
       
       bottomNavigationBar: _BottomBar(onAdd: _abrirCadastro),
     );
   }
 }
-
+ 
 class _Header extends StatelessWidget {
   const _Header();
-
+ 
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -466,17 +479,17 @@ class _Header extends StatelessWidget {
     );
   }
 }
-
+ 
 class _Categories extends StatelessWidget {
   const _Categories();
-
+ 
   static const List<_CategoryChip> _items = [
     _CategoryChip('Italiana', _HomeScreenState.darkGreen),
     _CategoryChip('Japonesa', _HomeScreenState.orange),
     _CategoryChip('Brasileira', _HomeScreenState.mainGreen),
     _CategoryChip('Árabe', _HomeScreenState.brown),
   ];
-
+ 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -509,7 +522,7 @@ class _Categories extends StatelessWidget {
     );
   }
 }
-
+ 
 class _RestaurantCard extends StatelessWidget {
   final String name;
   final String category;
@@ -517,7 +530,7 @@ class _RestaurantCard extends StatelessWidget {
   final String imagePath;
   final Uint8List? fotoBytes;
   final VoidCallback? onDelete;
-
+ 
   const _RestaurantCard({
     required this.name,
     required this.category,
@@ -526,7 +539,7 @@ class _RestaurantCard extends StatelessWidget {
     this.fotoBytes,
     this.onDelete,
   });
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -663,12 +676,12 @@ class _RestaurantCard extends StatelessWidget {
     );
   }
 }
-
+ 
 class _BottomBar extends StatelessWidget {
   final VoidCallback? onAdd;
-
+ 
   const _BottomBar({this.onAdd});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -700,20 +713,20 @@ class _BottomBar extends StatelessWidget {
     );
   }
 }
-
+ 
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool selected;
   final VoidCallback? onTap;
-
+ 
   const _NavItem({
     required this.icon,
     required this.label,
     this.selected = false,
     this.onTap,
   });
-
+ 
   @override
   Widget build(BuildContext context) {
     final color = selected ? Colors.white : Colors.white.withOpacity(0.5);
@@ -740,10 +753,10 @@ class _NavItem extends StatelessWidget {
     );
   }
 }
-
+ 
 class _CategoryChip {
   final String label;
   final Color color;
-
+ 
   const _CategoryChip(this.label, this.color);
 }
